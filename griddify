@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  cat <<'EOF'
+Usage: griddify [-o OUT] [--grid WxH] [--cell-width PX]
+                 [--image-height PX] [--label-height PX] [--margin PX]
+                 [--font-size PX] [--font PATH] [--labels A,B,C,...] [--no-labels]
+                 IMAGE [IMAGE ...]
+
+Arrange images into a labeled grid (A, B, C, ...) and save as one image.
+Grid size defaults to the most-square W x H (W >= H) whose product equals the
+number of images, if one exists (W and H both != 1); otherwise falls back to
+a near-square grid with some empty cells. The grid size chosen is printed on
+exit. --grid WxH overrides this and must have at least as many cells as images
+(extra cells are left empty).
+
+Requires 'uv' (brew install uv); dependencies (Pillow) are installed/cached
+by uv automatically on first run.
+
+Examples:
+  griddify -o grid.png shot1.png shot2.png shot3.png
+  griddify --grid 5x2 -o out.png screenshots/*.png
+EOF
+  exit 0
+fi
+
+if ! command -v uv >/dev/null 2>&1; then
+  echo "griddify: requires 'uv', not found on PATH." >&2
+  echo "Install it with:  brew install uv" >&2
+  exit 1
+fi
+
+exec uv run --script "$(dirname "${BASH_SOURCE[0]}")/griddify.py" "$@"
